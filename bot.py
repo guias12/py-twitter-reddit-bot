@@ -1,10 +1,11 @@
 import praw
 import json
 import requests
-from TwitterAPI import TwitterAPI
 import urllib
 import os
 import glob
+import time
+from TwitterAPI import TwitterAPI
 from random import randint
 from dotenv import load_dotenv
 
@@ -25,24 +26,27 @@ twitter = TwitterAPI(consumer_key = os.getenv("TW_CONSUMER_KEY"),
 
 subreddit = reddit.subreddit('blessedimages')
 
-newPost = subreddit.new(limit=1)
+while True:
+	newPost = subreddit.new(limit=1)
 
-for submission in newPost:
-	if submission.url is not None:
-		urlImagem = submission.url
+	for submission in newPost:
+		if submission.url is not None:
+			urlImagem = submission.url
 
-files = glob.glob('./img/*')
-for f in files:
-    os.remove(f)
+	files = glob.glob('./img/*')
+	for f in files:
+	    os.remove(f)
 
 
-imgDir = "./img/00000001.jpg"
-urllib.request.urlretrieve(urlImagem, imgDir)
+	imgDir = "./img/00000001.jpg"
+	urllib.request.urlretrieve(urlImagem, imgDir)
 
-randomNumber = randint(0, 9999)
-statusMessage = 'blessed image ' + str(randomNumber)
+	randomNumber = randint(0, 9999)
+	statusMessage = 'blessed image ' + str(randomNumber)
 
-file = open(imgDir, 'rb')
-data = file.read()
-r = twitter.request('statuses/update_with_media', {'status': statusMessage}, {'media[]':data})
-print(r.status_code)
+	file = open(imgDir, 'rb')
+	data = file.read()
+	r = twitter.request('statuses/update_with_media', {'status': statusMessage}, {'media[]':data})
+	print(r.status_code)
+
+	time.sleep(7200)
