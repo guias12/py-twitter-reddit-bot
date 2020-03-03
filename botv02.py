@@ -64,6 +64,7 @@ def make_tweet(img_dir):
 
 def main():    
     while True:
+        
         img_url = get_reddit_image()
         img_dir = save_image(img_url)
         make_tweet(img_dir)
