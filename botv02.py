@@ -11,7 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-last_id = None
+used_ids = []
+post_counter = 0
 twitter = TwitterAPI(consumer_key = os.getenv("TW_CONSUMER_KEY"),
                       consumer_secret = os.getenv("TW_CONSUMER_SECRET"),
                       access_token_key = os.getenv("TW_ACCESS_TOKEN"),
@@ -23,24 +24,37 @@ def make_request():
     return r    
 
 def get_reddit_image():
-    global last_id
+    global used_ids
 
     r = make_request()
 
     if r.status_code == 200:
         result = r.json()
         posts = result['data']['children']
-        post = get_new_post(posts)        
-
-        last_id = post['data']['id']
+        post = get_new_post(posts)
+        
+        used_ids.append(post['data']['id'])
         return post['data']['url']
 
 def get_new_post(posts):
-    global last_id
+    global used_ids
+    global post_counter
+
+    if post_counter == 8:
+        post_counter = 0
+        used_ids = []
 
     for post in posts[1:]:
-        if post['data']['id'] != last_id:
+        if len(used_ids) == 0:
+            post_counter += 1
             return post
+        else:
+            for used_id in used_ids:            
+                if post['data']['id'] == used_id:                
+                    pass
+                else:                
+                    post_counter += 1
+                    return post
 
 def save_image(img_url):
     files = glob.glob('./img/*')
