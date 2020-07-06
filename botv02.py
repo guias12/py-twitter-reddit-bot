@@ -90,8 +90,8 @@ def main():
             counter = 0
             recent_posts= {}
 
-        #time.sleep(10800)
-        time.sleep(180)
+        time.sleep(10800)
+        
 
 if __name__ == "__main__":
     main()
