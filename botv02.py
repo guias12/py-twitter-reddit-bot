@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+recent_posts = {}
+counter = 0
 twitter = TwitterAPI(consumer_key = os.getenv("TW_CONSUMER_KEY"),
                       consumer_secret = os.getenv("TW_CONSUMER_SECRET"),
                       access_token_key = os.getenv("TW_ACCESS_TOKEN"),
@@ -29,13 +31,29 @@ def get_reddit_image():
         posts = result['data']['children']
         post = get_new_post(posts)
 
-        return post['data']['url']
+        while not post['new']:
+            post = get_new_post(posts)
+
+        return post['post']['data']['url']
 
 def get_new_post(posts):
-    random_number = randint(1, 10)
+    global recent_posts
+    random_number = get_random_number()
+    post = {}
 
-    post = posts[random_number]
-    return post    
+    if posts[random_number]['data']['id'] in recent_posts:
+        post.update({'new': False})
+        post.update({'post': posts[random_number]})
+        
+    else: 
+        post.update({'new': True})
+        post.update({'post': posts[random_number]})        
+        recent_posts.update({ posts[random_number]['data']['id']: True })
+        
+    return post
+
+def get_random_number():
+    return randint(1, 15)
 
 def save_image(img_url):
     files = glob.glob('./img/*')
@@ -58,13 +76,22 @@ def make_tweet(img_dir):
     print(r.status_code)
 
 def main():    
+    global counter
+    global recent_posts
+
     while True:
         
         img_url = get_reddit_image()
         img_dir = save_image(img_url)
         make_tweet(img_dir)
+        counter +=1
 
-        time.sleep(10800)
+        if counter == 7:
+            counter = 0
+            recent_posts= {}
+
+        #time.sleep(10800)
+        time.sleep(180)
 
 if __name__ == "__main__":
     main()
